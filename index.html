@@ -3,6 +3,12 @@
 <head>
   <title>Dynamic Mux Video Player</title>
   <script src="https://unpkg.com/@mux/mux-player"></script>
+  <script>
+    // Disable right click
+    document.addEventListener('contextmenu', function(e) {
+      e.preventDefault();
+    });
+  </script>
 </head>
 <body>
   <div id="player"></div>
