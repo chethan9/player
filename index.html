@@ -8,6 +8,8 @@
     href="https://rawgit.com/enyo/dropzone/master/dist/dropzone.css">
 </head>
 <body>
+  <input type="file" id="fileInput">
+
   <div id="myId" class="dropbox">Upload videos</div>
   <script src="https://rawgit.com/enyo/dropzone/master/dist/dropzone.js"></script>
   <script>
@@ -23,41 +25,50 @@
     const key = params.get('key');
     const policy = params.get('policy');
 
+    // Connect the file input element to the Dropzone instance
     const myDropzone = new Dropzone(
       "div#myId",
       {
         url: uploadLink, // Upload URL from the URL parameter
         maxFilesize: 5120, // MB
         acceptedFiles: 'video/*',
-        accept: function(file, done) {
+        addRemoveLinks: true,
+        acceptFiles: function(files, done) {
           // Direct upload using form data
-          const formData = new FormData();
-          formData.append('x-amz-credential', xAmzCredential);
-          formData.append('x-amz-algorithm', xAmzAlgorithm);
-          formData.append('x-amz-date', xAmzDate);
-          formData.append('x-amz-signature', xAmzSignature);
-          formData.append('key', key);
-          formData.append('policy', policy);
-          formData.append('success_action_status', 201);
-          formData.append('success_action_redirect', '');
-          formData.append('file', file);
+          for (const file of files) {
+            const formData = new FormData();
+            formData.append('x-amz-credential', xAmzCredential);
+            formData.append('x-amz-algorithm', xAmzAlgorithm);
+            formData.append('x-amz-date', xAmzDate);
+            formData.append('x-amz-signature', xAmzSignature);
+            formData.append('key', key);
+            formData.append('policy', policy);
+            formData.append('success_action_status', 201);
+            formData.append('success_action_redirect', '');
+            formData.append('file', file);
 
-          const xhr = new XMLHttpRequest();
-          xhr.open('POST', uploadLink);
-          xhr.onload = function() {
-            if (xhr.status === 200) {
-              done();
-            } else {
-              done(xhr.statusText);
-            }
-          };
-          xhr.send(formData);
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', uploadLink);
+            xhr.onload = function() {
+              if (xhr.status === 200) {
+                done();
+              } else {
+                done(xhr.statusText);
+              }
+            };
+            xhr.send(formData);
+          }
         },
         init: function() {
           document.querySelector('div#myId').className += ' dropzone';
         }
       }
     );
+
+    // Connect the Dropzone instance to the file input element
+    myDropzone.on('addedfile', function(file) {
+      document.getElementById('fileInput').files = [];
+    });
   </script>
 </body>
 </html>
