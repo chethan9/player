@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width" />
+  <title>Sample dropzone upload</title>
+  <link rel="stylesheet"
+    href="https://rawgit.com/enyo/dropzone/master/dist/dropzone.css">
+</head>
+<body>
+  <div id="myId" class="dropbox">Upload videos</div>
+  <script src="https://rawgit.com/enyo/dropzone/master/dist/dropzone.js"></script>
+  <script>
+    Dropzone.autoDiscover = false;
+
+    // Extract parameters from the URL
+    const params = new URLSearchParams(window.location.search);
+    const uploadLink = params.get('uploadLink');
+    const xAmzCredential = params.get('xAmzCredential');
+    const xAmzAlgorithm = params.get('xAmzAlgorithm');
+    const xAmzDate = params.get('xAmzDate');
+    const xAmzSignature = params.get('xAmzSignature');
+    const key = params.get('key');
+    const policy = params.get('policy');
+
+    const myDropzone = new Dropzone(
+      "div#myId",
+      {
+        url: uploadLink, // Upload URL from the URL parameter
+        maxFilesize: 5120, // MB
+        acceptedFiles: 'video/*',
+        accept: function(file, done) {
+          // Direct upload using form data
+          const formData = new FormData();
+          formData.append('x-amz-credential', xAmzCredential);
+          formData.append('x-amz-algorithm', xAmzAlgorithm);
+          formData.append('x-amz-date', xAmzDate);
+          formData.append('x-amz-signature', xAmzSignature);
+          formData.append('key', key);
+          formData.append('policy', policy);
+          formData.append('success_action_status', 201);
+          formData.append('success_action_redirect', '');
+          formData.append('file', file);
+
+          const xhr = new XMLHttpRequest();
+          xhr.open('POST', uploadLink);
+          xhr.onload = function() {
+            if (xhr.status === 200) {
+              done();
+            } else {
+              done(xhr.statusText);
+            }
+          };
+          xhr.send(formData);
+        },
+        init: function() {
+          document.querySelector('div#myId').className += ' dropzone';
+        }
+      }
+    );
+  </script>
+</body>
+</html>
